@@ -1,5 +1,6 @@
 Build Configuration Descriptions
 构建配置描述
+
 Unreal Engine 4 uses a custom building method via the UnrealBuildTool (UBT). This tool processes the information necessary to build the engine's reflection system, integrating your C++ code with Blueprints, replication, serialization, and garbage collection.
 虚幻引擎 4 通过 UnrealBuildTool (UBT) 使用自定义构建方法。该工具处理构建引擎反射系统所需的信息，将 C++ 代码与蓝图、复制、序列化和垃圾收集集成。
 
