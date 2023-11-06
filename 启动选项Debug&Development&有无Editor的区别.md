@@ -1,3 +1,5 @@
+所有*编辑器目标都包括游戏代码和编辑器，当您运行它们时，它们将打开编辑器。 Debug / DebugGame 目标不包括编辑器，当您运行它们时，它将启动游戏。
+
 ## Build Configuration Descriptions
 构建配置描述
 
