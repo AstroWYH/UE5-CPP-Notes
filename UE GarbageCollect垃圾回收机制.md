@@ -317,3 +317,4 @@ Maximum number of Uobjects that can exist in cooked game：独立游戏模式下
 Maximum number of Uobjects that can exist in the editor：编辑器模式下UObject存在的最大数量，超过该值时，非shipping会触发check并提示。
 
 参考链接：https://zhuanlan.zhihu.com/p/448412111
+参考链接：https://www.cnblogs.com/kekec/p/13045042.html
