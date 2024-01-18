@@ -1,7 +1,9 @@
+## 示例
 ![image](https://github.com/AstroWYH/UE5-CPP-Notes/assets/94472801/afcaff1c-8f07-4046-9d6f-65d850e71850)
 ![image](https://github.com/AstroWYH/UE5-CPP-Notes/assets/94472801/4c029cbb-e408-4ee6-89d1-5b2328a90327)
 每次跳跃增加20M内存，可以很直观的看见。
 
+## 操作步骤
 1 选用DebugGame Editor，设置以下属性。直接以游戏-game启动，并设置相应的trace配置条件。
 ![image](https://github.com/AstroWYH/UE5-CPP-Notes/assets/94472801/a2dabddd-9e1f-4e38-8f51-f8cf97bd7c6d)
 2 找到对应UE版本的UnrealInsights.exe
