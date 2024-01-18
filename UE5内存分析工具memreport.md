@@ -35,3 +35,5 @@ UE Allocator对分配的内存打特殊标记, 比如TEXTUREGROUP_Lightmap，TEX
 ![image](https://github.com/AstroWYH/UE5-CPP-Notes/assets/94472801/7958aba9-d09e-4425-bdd2-20924d9577a0)
 ## StaticMeshCompoent占据内存Object对象统计
  ![image](https://github.com/AstroWYH/UE5-CPP-Notes/assets/94472801/49bd7ac4-2d30-418c-b22e-6b3c09f1d33d)
+
+ 部分参考：https://blog.csdn.net/qq_29523119/article/details/131628733
