@@ -1,3 +1,17 @@
+实例举例：
+
+FArchive* Reader = IFileManager::Get().CreateFileReader(*Filename, 0);
+
+这样，Reader这个FArchive的Serialize序列化，都用于读取。
+
+比如以下操作：
+
+Reader->Seek(SomeOffset); // 指针移动到目的位置
+
+Reader->Serialize(&SomeStruct, sizeof(SomeStruct)); // 读取SomeStruct
+
+
+
 FArchive 是 Unreal Engine 中用于序列化（将数据转换为可存储或传输的格式）和反序列化（从存储或传输的格式还原数据）的基类。在 Unreal Engine 中，它主要用于将数据存储到文件或网络中，以及从这些来源读取数据。
 
 ```cpp
