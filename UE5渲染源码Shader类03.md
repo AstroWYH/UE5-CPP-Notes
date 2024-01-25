@@ -1,4 +1,4 @@
-## RHI层面的shader类
+## RHI层面的shader的创建
 
 ![image-20240123172456202](Images/UE5渲染源码Shader类03/image-20240123172456202.png)
 
@@ -22,7 +22,7 @@ FRHIShader，继承自FRHIResource。思路也跟之前一样，这个类内容�
 
 ![image-20240123173044388](Images/UE5渲染源码Shader类03/image-20240123173044388.png)
 
-shader最重要的就是它的代码Code
+## shader最重要的就是它的代码Code
 
 ![image-20240123173245559](Images/UE5渲染源码Shader类03/image-20240123173245559.png)
 
@@ -30,7 +30,9 @@ shader最重要的就是它的代码Code
 
 ![image-20240123173414291](Images/UE5渲染源码Shader类03/image-20240123173414291.png)
 
-怎么创建一个shader呢，就是上面这个函数。
+## 怎么创建一个shader呢
+
+就是上面这个函数。
 
 ![image-20240123173452915](Images/UE5渲染源码Shader类03/image-20240123173452915.png)
 
@@ -230,5 +232,47 @@ LayoutField的信息收集，就是收集Name、收集成员变量的指针、�
 
 我们展开IMPLEMENT_GLOBAL_SHADER宏，可以看到，里面最终要的就是，如果写了这个宏，就会去调刚才上面说的InternalLinkType<1>的Initialize方法，然后就会形成链式调用，就会去收集刚才说的所有LAYOUT_XXX成员变量的反射信息，这就和刚才关联起来了。
 
-34:19
+![image-20240125203128917](Images/UE5渲染源码Shader类03/image-20240125203128917.png)
 
+![image-20240125203050064](Images/UE5渲染源码Shader类03/image-20240125203050064.png)
+
+我们回到刚才说的shader的这几个宏展开，怎么收集参数的问题。
+
+可以看到这几个宏展开后，每个函数一样，但是第一个参数是不一样的，那他是怎么实现链式结构的呢？
+
+![image-20240125203441575](Images/UE5渲染源码Shader类03/image-20240125203441575.png)
+
+原因是，先看最后的这个宏展开（即END那个宏展开的），它是倒序执行，先执行最后一个参数收集（即END宏上面那个宏展开的，540行调用），然后会返回一个上一个函数的指针。
+
+![image-20240125204047217](Images/UE5渲染源码Shader类03/image-20240125204047217.png)
+
+这里是END上面那个宏展开，可以看到Members在收集信息，537行就是成员变量的指针偏移量。收集完后，546行又在调用它的上一个宏的函数。
+
+![image-20240125204233820](Images/UE5渲染源码Shader类03/image-20240125204233820.png)
+
+一直链式调到第一个，就会执行默认的空。
+
+![image-20240125204331942](Images/UE5渲染源码Shader类03/image-20240125204331942.png)
+
+这就是Shader的参数收集信息流程。通过这几个宏，就将FParameters的参数，收集起来了。
+
+比如这里的3个变量，view, fullscreenrectm，geometry的偏移、指针、还有一些名字的信息，就收集起来了。
+
+那自然而然，到时就能拿这份信息去匹配着色器了。
+
+![image-20240125204849000](Images/UE5渲染源码Shader类03/image-20240125204849000.png)
+
+上面分别是把USE和START的宏展开，可以看到START主要是定义FParameters-FTypeInfo结构体的信息，然后有个GetStructMetadata的函数。
+
+当调用Use的时候，就能自动拿到这些信息元数据。
+
+这就是UE中，shader怎么收集参数的过程，利用反射，链式调用来实现。
+
+## 总结
+
+1. RHI层面的Shader，是怎么创建的。
+2. 上层逻辑的Shader，是怎么实现了一套反射机制，参数是怎么收集的。
+
+这讲涉及到**shader的创建（代码Code）**，涉及到**参数的收集**。
+
+有了这些shader后，我们**怎么去调用他**，以及**给这些shader传真正的参数值**，**形成一个完整渲染的pass**，那是后面的内容。
