@@ -1,3 +1,5 @@
+今天看shader的创建，利用特殊的反射收集shader参数。
+
 ## RHI层面的shader的创建
 
 ![image-20240123172456202](Images/UE5渲染源码Shader类03/image-20240123172456202.png)

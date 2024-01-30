@@ -1,3 +1,5 @@
+今天看UE中，RHI层面，以及底层D3D12、OGL层面具体的封装。
+
 ## UE中上层宏观的FRHIResource
 
 ![image-20240119172241513](Images/UE5渲染源码RHI资源2/image-20240119172241513.png)
