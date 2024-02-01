@@ -178,7 +178,7 @@ RHI层面，本质上来说，所有东西都在commandlist里面，commandlist�
 
 但是这是RHI层面，在D3D12里面，还有一层封装。
 
-18.55
+下一讲继续。
 
 
 
