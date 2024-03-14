@@ -1,7 +1,3 @@
-## 渲染管线
-
-![image-20240119161614750](Images/UE5渲染源码流程概述/image-20240119161614750.png)
-
 UE5渲染源码的三件事情：1）代码本身；2）用什么样子的参数，哪些输入的数据，数据的格式；3）真正的数据。
 
 首先看UE，RHI层面，以及底层D3D12、OGL层面对渲染流程的封装。
@@ -320,7 +316,7 @@ FGlobalShader是继承自FShader。
 
 那么这块是怎么起作用的？参数是怎么收集的？带着这些疑问去看宏的代码。
 
-## FShader的反射
+## FShader的反射收集参数
 
 ![image-20240124170009304](Images/UE5渲染源码流程概述/image-20240124170009304.png)
 
@@ -452,20 +448,505 @@ LayoutField的信息收集，就是收集Name、收集成员变量的指针、�
 
 那自然而然，到时就能拿这份信息去匹配着色器了。
 
-![image-20240125204849000](Images/UE5渲染源码流程概述/image-20240125204849000.png)
-
-上面分别是把USE和START的宏展开，可以看到START主要是定义FParameters-FTypeInfo结构体的信息，然后有个GetStructMetadata的函数。
-
-当调用Use的时候，就能自动拿到这些信息元数据。
-
-这就是UE中，shader怎么收集参数的过程，利用反射，链式调用来实现。
-
 ## 阶段小结
 
 1. RHI层面的Shader，是怎么创建的。
 2. 上层逻辑的Shader，是怎么实现了一套反射机制，参数是怎么收集的。
 
-这讲涉及到**shader的创建（代码Code）**，涉及到**参数的收集**。
+## shader的创建&shaderdata的code&resourceCounts（参数数量）
 
-有了这些shader后，我们**怎么去调用他**，以及**给这些shader传真正的参数值**，**形成一个完整渲染的pass**，那是后面的内容。
+![image-20240129161809681](Images/UE5渲染源码流程概述/image-20240129161809681.png)
+
+首先，这个FGlobalShaderMap管理着所有shader的信息。
+
+![image-20240129162137249](Images/UE5渲染源码流程概述/image-20240129162137249.png)
+
+引擎初始化的时候，会调这个编译全局shader的函数。
+
+![image-20240129162352422](Images/UE5渲染源码流程概述/image-20240129162352422.png)
+
+进入到里面，可以看到这个compile有两种模式。
+
+1. 这里的if模式，如果配置了这个变量，那么在一开始，就会编译全部的shader。
+2. 否则的话，在某个shader具体使用的时候，会去get，如果get不到，才会开始创建。
+
+![image-20240129162638012](Images/UE5渲染源码流程概述/image-20240129162638012.png)
+
+继续上面1）模式的7544行，会遍历所有的shader，get不到会触发创建。
+
+![image-20240129162906918](Images/UE5渲染源码流程概述/image-20240129162906918.png)
+
+![image-20240129163101877](Images/UE5渲染源码流程概述/image-20240129163101877.png)
+
+![image-20240129163156065](Images/UE5渲染源码流程概述/image-20240129163156065.png)
+
+![image-20240129163456243](Images/UE5渲染源码流程概述/image-20240129163456243.png)
+
+一直深入，就会到我们之前讲过的流程，到RHICreateVertexShader这种，再深入就会调具体的入D3D12和OGL的createshader流程。
+
+![image-20240129163551786](Images/UE5渲染源码流程概述/image-20240129163551786.png)
+
+对于所有的shader，比如这个FD3D12VertexShader，它都会继承这么一个XXXShaderData。
+
+![image-20240129163711589](Images/UE5渲染源码流程概述/image-20240129163711589.png)
+
+我们之前说要关注里面的Code。
+
+但还需要关注另一个变量，就是这个ResourceCounts。
+
+![image-20240129163855419](Images/UE5渲染源码流程概述/image-20240129163855419.png)
+
+## Shader的Code和FShaderCodePackedResourceCounts
+
+统计当前shader，用了多少个这种参数，比如NumSamplers、NumSRVs、NumCBs、NumUAVs。
+
+这个参数的使用数量，是我们使用根签名时，需要的信息。
+
+先记住它FShaderCodePackedResourceCounts。
+
+这个类的信息，是在CreateShader的时候，提取出来的。
+
+![image-20240129165556428](Images/UE5渲染源码流程概述/image-20240129165556428.png)
+
+前面讲过，UE的这个Code里面不止是code，还有optionaldata。
+
+ShaderReader会读取Code+OptionalData，这里FShaderCodePackedResourceCounts就是那段optionalData。
+
+那么这个参数，是怎么来的呢？其实是编译的时候来的。
+
+![image-20240129170009299](Images/UE5渲染源码流程概述/image-20240129170009299.png)
+
+真正的编译代码在这，比较复杂。
+
+我们只关注一个东西。就是一个Shader着色器，它用到的参数是怎么来的？
+
+![image-20240129170526725](Images/UE5渲染源码流程概述/image-20240129170526725.png)
+
+实际上，DX编译一段代码的时候，会包含所有的信息。不只是一个可执行的bytecode，它会存储这一段着色器代码所包含的所有描述信息。
+
+这是DX本身提供的功能，虽然平时我们写简单的demo没用到，都是手工填的。
+
+但实际上UE引擎，面对各种复杂的着色器，它能够去处理。只要你的shader代码是正确的，很多信息它都能去get出来。
+
+在编译完代码后，就能拿到这些描述、反射信息，就是这些ID3D开头的。
+
+![image-20240129170639700](Images/UE5渲染源码流程概述/image-20240129170639700.png)
+
+进入到函数内部，实际上就是这个BindDesc，把它get出来。
+
+这个里面就存储着所有Resource变量的信息，通过for循环拿到处理。
+
+![image-20240129170838899](Images/UE5渲染源码流程概述/image-20240129170838899.png)
+
+比如当Resource是一张贴图时，就通过BindDesc拿到它的NumSamplers、NumSRVs等信息。
+
+![image-20240129171042830](Images/UE5渲染源码流程概述/image-20240129171042830.png)
+
+这也是通过这里反射拿到的信息，在编译的时候拿完这些NumXXX。
+
+![image-20240129171146027](Images/UE5渲染源码流程概述/image-20240129171146027.png)
+
+拿到之后，再在下面把它们组装起来，形成刚才前面说的FShaderCodePackedResourceCounts。
+
+![image-20240129171309194](Images/UE5渲染源码流程概述/image-20240129171309194.png)
+
+然后把他们拼接到代码Code里面去，生成。
+
+![image-20240129163456243](Images/UE5渲染源码流程概述/image-20240129163456243.png)
+
+这里拼接出来的Code，就会传到后面的RHICreateShaderXXX里面去。
+
+所以，那边就拿到了这些数量Num的信息。
+
+所以，创建Shader的时候，就已经把这种每个Shader的参数数量创建起来了。
+
+## PipelineState & 根签名
+
+![image-20240129171936720](Images/UE5渲染源码流程概述/image-20240129171936720.png)
+
+这个就是封装了D3D12的根签名。
+
+![image-20240129172004768](Images/UE5渲染源码流程概述/image-20240129172004768.png)
+
+它当然包含着，真正的根签名。
+
+![image-20240129172638731](Images/UE5渲染源码流程概述/image-20240129172638731.png)
+
+看它的构造，里面的Init。这个是shader里面的全部的信息包。就是一个流程里面，对应的所有shader全部的信息。
+
+因为一个根签名，不止对应一个shader，你有顶点着色器、像素着色器，以及其他各种着色器。都会跟一个根签名拼起来。
+
+那么这些shader的信息，会放在这个FD3D12QuantizedBoundShaderState信息包里面。
+
+它会用这些信息，去构建一个Desc（这个desc几乎就已经是真正的那个desc了），然后去初始化Init。
+
+![image-20240129172818155](Images/UE5渲染源码流程概述/image-20240129172818155.png)
+
+它已经构造出那个真正的decs了（也就是这个宏的意思）。
+
+然后用这个真正的desc，拿到blob，然后去调D3D12原始接口的CreateRootSignature。
+
+## 创建Pso
+
+FD3D12QuantizedBoundShaderState Shader信息包。
+
+FD3D12RootSignatureDesc 根签名描述符。
+
+这是2个和根签名、pso相关的数据类，我们跳过。
+
+跳到**创建pso**。
+
+![image-20240129174633860](Images/UE5渲染源码流程概述/image-20240129174633860.png)
+
+在创建PSO pipelinestate的时候，要把整个渲染管线的每一个shader，即vertexshader、meshshader、pixelshader、amplificationshader、greometryshader等，每一个shader他们的参数全部都统计出来。
+
+会创建这个**FD3D12QuantizedBoundShaderState**，信息包。
+
+![image-20240130165743136](Images/UE5渲染源码流程概述/image-20240130165743136.png)
+
+用它来创建根签名。
+
+## 阶段小结
+
+1. shader是在初始化的时候，一开始就创建的。（也有那种get时创建的）。
+2. shader的参数是怎么来的？编译后，利用DX的反射技术获取出来的，编译代码的时候，可以直接获取到相关的描述，再get到所有的信息。比如每个资源的名字、大小等所有信息。然后那时，就把一个shader所用到的每个参数数量，封装起来，拼接到内存里面去，然后就传到RHICreateShader。RHICreateShader就会把这个信息，存到shader的一个成员变量里面，然后创建根签名的时候，就会用到它。注意，创建根签名，是一个根签名对应整个流程的所有shader，所以它先会把所有绑定的vs、ps所有的信息，先做一个统计，然后再用来创建根签名。这样，整个渲染管线所有的东西，就创建完毕了。
+
+今天看渲染命令的封装思路，包括RHI的以及底层D3D12的，RHI的比较简单，重点是D3D12的。
+
+## RHI层面的Command
+
+![image-20240130172610078](Images/UE5渲染源码流程概述/image-20240130172610078.png)
+
+这是RHI的基类，Next指针是为了形成链表，链接下一个command，下一个command...
+
+另一个虚函数，具体去执行RHIcommand的方法。因为有不同的类型的渲染命令，所以用虚函数。到真正的子函数去执行。
+
+![image-20240130172833098](Images/UE5渲染源码流程概述/image-20240130172833098.png)
+
+下面马上就可以看到一个辅助子类，模板类，可传一个lambda存起来，执行的之后就执行这个lambda，然后释放。
+
+有它后就可以轻易的把lambda传入，构成一个渲染命令。
+
+![image-20240131165201423](Images/UE5渲染源码流程概述/image-20240131165201423.png)
+
+## FRHICommand
+
+此外，还有另一个类FRHICommand继承Base。
+
+![image-20240131165333185](Images/UE5渲染源码流程概述/image-20240131165333185.png)
+
+它也是传一个TCmd的模板参数进来，然后Execute。
+
+![image-20240131165655770](Images/UE5渲染源码流程概述/image-20240131165655770.png)
+
+然后我们看具体的，比如这个setshader的类，继承FRHICommand。
+
+然后它主要去实现Execute类。
+
+![image-20240131165807592](Images/UE5渲染源码流程概述/image-20240131165807592.png)
+
+Execute实现，主要就是去调用RHISetShaderParameter。就真正去调到RHI里面的函数，然后就会调到底层具体子类的D3D12、OGL的实现。
+
+在子类中，真正的去触发渲染命令。
+
+![image-20240131165941080](Images/UE5渲染源码流程概述/image-20240131165941080.png)
+
+刚才上面的宏展开后是这个。
+
+CmdList是命令的链表，就是开始说的，把command组装成一个链表的那个类。
+
+Context上下文，你执行一些命令，有时候需要不同的上下文，不同的状态，在不同的地方，用哪个commandlist去调用参数。context里面就是对应的这些信息。
+
+context在D3D12里面，也是有具体的子类去实现的。
+
+![image-20240131170224960](Images/UE5渲染源码流程概述/image-20240131170224960.png)
+
+![image-20240131170233015](Images/UE5渲染源码流程概述/image-20240131170233015.png)
+
+![image-20240131170243568](Images/UE5渲染源码流程概述/image-20240131170243568.png)
+
+![image-20240131170251231](Images/UE5渲染源码流程概述/image-20240131170251231.png)
+
+![image-20240131170259248](Images/UE5渲染源码流程概述/image-20240131170259248.png)
+
+这里面有几百行，各种各样常规的渲染命令，FRHICommandXXX，都作为FRHICommand的子类。
+
+## FRHICommandList命令链表
+
+![image-20240131170425511](Images/UE5渲染源码流程概述/image-20240131170425511.png)
+
+![image-20240131170434478](Images/UE5渲染源码流程概述/image-20240131170434478.png)
+
+![image-20240131170442454](Images/UE5渲染源码流程概述/image-20240131170442454.png)
+
+然后我们看FRHICommandList，看到继承最里面的Base，这就是刚才将command组装成链表的类。
+
+![image-20240131170553206](Images/UE5渲染源码流程概述/image-20240131170553206.png)
+
+这里我们关注2个成员：
+
+Root是记录整个命令链表的第一个命令。每一个命令都有个Next，最开始我们看到过。
+
+CommandLink是二级指针，是最后一个命令的Next的地址，这是为了添加新的命令用的，添加时set到这个next。
+
+如果没这个指针，那每次添加新命令，就要从root遍历到尾端，就需要遍历一次。
+
+![image-20240131170857384](Images/UE5渲染源码流程概述/image-20240131170857384.png)
+
+再关注几个关键的方法：
+
+alloccommand，从内存申请命令，然后记录+1。
+
+515、516行，就是在添加新的命令，并通过commandlink链接起来。
+
+调这个函数，自动就串起来了。
+
+![image-20240131171333064](Images/UE5渲染源码流程概述/image-20240131171333064.png)
+
+还可以直接传命令，这种形式去申请。
+
+![image-20240131171425225](Images/UE5渲染源码流程概述/image-20240131171425225.png)
+
+还有这种形式，比如我们常见的EnqueueCommand的之类的。就传入一个lambda，if是立即执行的模式，一般走else。
+
+然后去新建一个lambda的模板类，也是命令base的子类（最开始有提到）。
+
+![image-20240131171623912](Images/UE5渲染源码流程概述/image-20240131171623912.png)
+
+然后这里宏展开也是调AllocCommand。
+
+所以调EnqueueLambda的时候，也是自动就把命令加入了命令链表。
+
+但要清楚，GPU还没有执行。
+
+FRHICommandList命令链表的执行。
+
+![image-20240131171900735](Images/UE5渲染源码流程概述/image-20240131171900735.png)
+
+![image-20240131172014825](Images/UE5渲染源码流程概述/image-20240131172014825.png)
+
+定义了一个迭代器，然后while循环，去不断执行每个命令。
+
+## Context & dynamic
+
+一般很多函数是通过这个context去调。但我们之前也经常见到dynamic调到。
+
+dynamic：D3D device直接定义对应的操作，和上下文没关联。
+
+context：D3D12的所有操作，都是一个commandlist对应的方法，这种就会通过context去调用。
+
+大部分时候，都是调context里面的接口。
+
+RHI层面，本质上来说，所有东西都在commandlist里面。
+
+commandlist里面也有一个context，有的是在dynamicRHI里面定义的。
+
+比如create等操作，就是dynamic定义的，因为是和device有关，上下文无关的。比如create一个texture，create一个pipeline state。
+
+但比如设置一个shader的参数，去哪个pipielinestate里面去设置哪个commandlist，在D3D12的commandlist里去设置这个，那就是有不同上下文context的。
+
+不管是context，还是dynamic，都收拢在commandlist链表或者说队列里面，记录着所有的command，然后command的子类，就是调用这些方法。
+
+但是这是RHI层面，在D3D12里面，还有一层封装。
+
+## 阶段总结
+
+1. command组成commandlist链表。
+2. command支持传入lambda执行。很多都是UE自己的内部类去传，去执行。外部也可以ENQUEUE。
+3. commandlist可以alloccommand，也可以直接enqueue，都会自动拼接command。
+4. 但执行是在Execute里面。
+
+继续看渲染命令的封装，D3D12层面的。
+
+## FD3D12Device
+
+![image-20240201155504394](Images/UE5渲染源码流程概述/image-20240201155504394.png)
+
+D3D12的一切都从device出发，我们看FD3D12Device，device存在263行的GetDevice里面。
+
+关键要素：commandqueue，是commandlist的执行者。
+
+commandlist，如设置顶点、索引的buffer，要调commandlist的setvertexbuffer。
+
+![image-20240201155844220](Images/UE5渲染源码流程概述/image-20240201155844220-17067743246991.png)
+
+那在FD3D12Device里，就有这个queue。
+
+![image-20240201155915540](Images/UE5渲染源码流程概述/image-20240201155915540.png)
+
+![image-20240201155953178](Images/UE5渲染源码流程概述/image-20240201155953178.png)
+
+## commandqueue 3种
+
+FD3D12Queue它就是对应封装d3d12的commandqueue。
+
+而FD3D12Device里面的Queues，不是一个queue，而是3个数组，枚举值区分。
+
+![image-20240201160100306](Images/UE5渲染源码流程概述/image-20240201160100306.png)
+
+一个device对应3个queue，用来做不同的操作。
+
+![image-20240201160156771](Images/UE5渲染源码流程概述/image-20240201160156771.png)
+
+比如上节说的context，不同的操作就有不同的context。
+
+FD3D12Device里存着FD3D12CommandContext。
+
+常见很多graphic的操作，都是调Direct。
+
+此外，最上面还有个单独的context，immediate立即执行模式。
+
+## FD3D12CommandContext
+
+那说到context，我们又来看context的类有什么。
+
+![image-20240201160805275](Images/UE5渲染源码流程概述/image-20240201160805275.png)
+
+可以看到一个context里面，就对应这一个commandlist，一个commandallocator，一个**payloads**的数组，一组工作，这个也很重要，稍后再看。
+
+![image-20240201171636805](Images/UE5渲染源码流程概述/image-20240201171636805.png)
+
+此外，还有个**statecache**也重要。
+
+即使在RHI里面调了execute，也不是立即执行，和这个有关。
+
+## FD3D12Payload
+
+我们先看payload。
+
+![image-20240201171739607](Images/UE5渲染源码流程概述/image-20240201171739607.png)
+
+![image-20240201171822758](Images/UE5渲染源码流程概述/image-20240201171822758.png)
+
+里面有个缓存的链表的数组，是先缓存起来，后面再去执行。
+
+![image-20240201171925342](Images/UE5渲染源码流程概述/image-20240201171925342.png)
+
+payload就是gpu要去执行的一个work。
+
+![image-20240201171952127](Images/UE5渲染源码流程概述/image-20240201171952127.png)
+
+有个queue，到时候去哪个queue执行。
+
+![image-20240201172112527](Images/UE5渲染源码流程概述/image-20240201172112527.png)
+
+还有些fence，执行命令要等待的操作。
+
+## FD3D12StateCache
+
+再说StateCache。
+
+![image-20240201172226431](Images/UE5渲染源码流程概述/image-20240201172226431.png)
+
+整个渲染管线有很多状态，比如光栅化的状态，stencil的状态。可能反复设置了很多次，但没有立刻执行，而是缓存。
+
+上层很多set状态的操作，底层只是缓存起来，最后一次性设置。
+
+![image-20240201172436232](Images/UE5渲染源码流程概述/image-20240201172436232.png)
+
+这里缓存了很多信息。
+
+![image-20240201172525159](Images/UE5渲染源码流程概述/image-20240201172525159.png)
+
+这个apply负责去执行。先标记dirty。
+
+![image-20240201172623466](Images/UE5渲染源码流程概述/image-20240201172623466.png)
+
+![image-20240201172727471](Images/UE5渲染源码流程概述/image-20240201172727471.png)
+
+然后拿出compute或graphic信息，然后设置根签名（上次讲了根签名）。
+
+![image-20240201172825177](Images/UE5渲染源码流程概述/image-20240201172825177.png)
+
+到这取context的commandlist，才是真正去d3d12的commandlist去设置。
+
+这有很多set。
+
+![image-20240201172931432](Images/UE5渲染源码流程概述/image-20240201172931432.png)
+
+还有这些。
+
+即FD3D12StateCache有2层结构，第一层保存，第二层apply真正去调d3d12实现。
+
+基本上是把渲染管线所有的东西都缓存起来，包括shader、根签名、uniformbuffer，srv......
+
+## 阶段总结
+
+1. 一个d3d的device里面，有3套queue，3套context，copy async direct，决定操作是在哪个上下文去执行的。
+
+2. 在一个context里面，有payload（gpu要执行的一组工作），有statecache（RHI层面设置的全部命令，缓存在这里）。
+
+
+## D3D12CommandContext
+
+![image-20240201173441040](Images/UE5渲染源码流程概述/image-20240201173441040.png)
+
+![image-20240201173429620](Images/UE5渲染源码流程概述/image-20240201173429620.png)
+
+回到d3d12commandcontext这个类，我们说在RHI层面的context，定义了很多操作，在d3d12里面去实现它。就是这一堆。
+
+![image-20240201173539094](Images/UE5渲染源码流程概述/image-20240201173539094.png)
+
+但是我们点进去看，其实d3d12context这的实现，也只是设置到statecache里面。所有操作都是这样。
+
+RHI的角度其实不用管，execute了，就认为执行了。
+
+## RHI提交线程 D3D12真正执行线程
+
+但d3d12里，又设置了一套，因为它是在单独的一个线程去操作的。
+
+RHI渲染render线程：调用了各种RHI的命令，最终提交到D3D12里面缓存了。
+
+而D3D12的那个线程：每一帧去apply一下，去真正的执行。
+
+![image-20240201173942424](Images/UE5渲染源码流程概述/image-20240201173942424.png)
+
+![image-20240201174031481](Images/UE5渲染源码流程概述/image-20240201174031481.png)
+
+![image-20240201174528168](Images/UE5渲染源码流程概述/image-20240201174528168.png)
+
+![image-20240201174103887](Images/UE5渲染源码流程概述/image-20240201174103887.png)
+
+![image-20240201174615744](Images/UE5渲染源码流程概述/image-20240201174615744.png)
+
+每一帧执行一次process，每次遍历所有device，每个device里面有3个queue，然后去执行。
+
+实际上就是去拿出queue里面的payload，我们之前说payload就是组装了一组的commandlist，是一个commandlist数组。
+
+然后去execute这个payload。
+
+![image-20240201174703654](Images/UE5渲染源码流程概述/image-20240201174703654.png)
+
+![image-20240201174736815](Images/UE5渲染源码流程概述/image-20240201174736815.png)
+
+最终一个payload，就是一个commandlist数组，一个for循环取出来取执行。
+
+![image-20240201174815216](Images/UE5渲染源码流程概述/image-20240201174815216.png)
+
+插一句，这里注释说了，如果一次提交的commandlist太长，gpu会不支持，不会一次性执行，会分批次。通过offset记录位置。
+
+![image-20240201174925350](Images/UE5渲染源码流程概述/image-20240201174925350.png)
+
+执行完后，会release。
+
+![image-20240201174945150](Images/UE5渲染源码流程概述/image-20240201174945150.png)
+
+但不是真正的release，而是放回到queue的一个池里。
+
+![image-20240201175028400](Images/UE5渲染源码流程概述/image-20240201175028400.png)
+
+需要新的payload时，重复利用。
+
+## 阶段总结
+
+1. FD3D12DynamicRHI初始化的时候，会新建一个D3D12的真正执行线程，d3d12里，每个device对应3个不同的queue，以及3个不同的context。
+
+2. RHI渲染线程：当RHI上层去提交setparam时，它只是把commandlist，对应状态存储到context的statecache里。
+
+3. D3D12真正执行现场：每帧process遍历所有device，遍历每个device里面的3个queue，遍历里面的payload，把payload里面的commandlist数组拿出来，调statecache的apply，一次执行。
+
+
+
+
+
 
