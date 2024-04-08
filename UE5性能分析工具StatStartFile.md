@@ -6,7 +6,7 @@
 
 ## 2 在需要测试的地方进行打点
 
-![image-20240408171825471](Images/UE5性能分析工具stat StartFile/image-20240408171825471.png)
+![image-20240408172330783](Images/UE5性能分析工具StatStartFile/image-20240408172330783.png)
 
 ## 3 进入游戏，录制trace生成文件
 
@@ -16,10 +16,10 @@
 
 随后，生成了以下文件。
 
-![image-20240408171834773](Images/UE5性能分析工具stat StartFile/image-20240408171834773.png)
+![image-20240408172338413](Images/UE5性能分析工具StatStartFile/image-20240408172338413.png)
 
 ## 4 editor会话前端解析文件
 
 通过editor的会话前端打开后，可以发现如下的数据统计信息：
 
-![image-20240408171843681](Images/UE5性能分析工具stat StartFile/image-20240408171843681.png)
+![image-20240408172348439](Images/UE5性能分析工具StatStartFile/image-20240408172348439.png)
