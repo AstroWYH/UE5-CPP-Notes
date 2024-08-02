@@ -37,7 +37,7 @@ void AMyCharacter::RemapSprintKey(FKey NewKey)
 
 // 在游戏设置菜单中调用 RemapSprintKey 函数
 RemapSprintKey(FKey("B")); // 将组合键改为 Shift + B
-```cpp
+```
 比较和总结
 在旧的输入系统中，处理组合键和动态重映射需要手动检查每个按键的状态，并且需要编写复杂的逻辑来管理按键的状态和输入的变化。代码可能会变得难以维护，并且在处理复杂的输入方案时，容易出错。
 ```cpp
