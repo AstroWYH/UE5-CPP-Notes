@@ -7,7 +7,7 @@ Enhanced Input 系统相对于旧的输入系统，能够解决一些更复杂�
 Enhanced Input 系统的解决方案
 步骤 1：定义输入动作
 使用 Enhanced Input 系统，可以定义一个输入动作来表示组合键。
-```
+```cpp
 // 定义一个输入动作，支持组合键
 UInputAction* SprintAction = NewObject<UInputAction>();
 SprintAction->InputActionName = FName("Sprint");
@@ -16,7 +16,7 @@ SprintAction->AddMapping(FKeyMapping(FKey("A"), EInputTrigger::Pressed));
 ```
 步骤 2：绑定输入动作
 然后，将这个输入动作绑定到一个函数，这样当组合键被按下时，就会触发该函数。
-```
+```cpp
 PlayerInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMyCharacter::Sprint);
 
 void AMyCharacter::Sprint()
@@ -27,7 +27,7 @@ void AMyCharacter::Sprint()
 ```
 步骤 3：动态重映射输入
 Enhanced Input 系统允许你在游戏运行时动态地更改输入映射。例如，玩家可以在设置菜单中重新定义组合键。
-```
+```cpp
 void AMyCharacter::RemapSprintKey(FKey NewKey)
 {
     SprintAction->ClearMappings();
@@ -37,10 +37,10 @@ void AMyCharacter::RemapSprintKey(FKey NewKey)
 
 // 在游戏设置菜单中调用 RemapSprintKey 函数
 RemapSprintKey(FKey("B")); // 将组合键改为 Shift + B
-```
+```cpp
 比较和总结
 在旧的输入系统中，处理组合键和动态重映射需要手动检查每个按键的状态，并且需要编写复杂的逻辑来管理按键的状态和输入的变化。代码可能会变得难以维护，并且在处理复杂的输入方案时，容易出错。
-```
+```cpp
 // 旧输入系统中手动检查组合键的状态
 void AMyCharacter::Tick(float DeltaTime)
 {
