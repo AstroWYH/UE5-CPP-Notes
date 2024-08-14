@@ -115,7 +115,7 @@ attackSelector->AddChild(new MeleeAttackNode());  // 尝试近战攻击
 // 添加远程攻击行为
 attackSelector->AddChild(new RangedAttackNode()); // 如果近战失败，尝试远程攻击
 ```
-2. BTSequence（顺序节点）
+BTSequence（顺序节点）
 作用: BTSequence节点会按顺序执行它的子节点，直到其中一个子节点失败为止。
 执行逻辑:
 它依次执行每个子节点。
