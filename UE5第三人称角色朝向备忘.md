@@ -7,4 +7,6 @@
 ![image](https://github.com/user-attachments/assets/ca8784a3-6af7-4b63-8bb8-cdded31c7cbb)
 
 弹簧臂的控制
-![image](https://github.com/user-attachments/assets/bd923d84-9a3a-45c9-ad09-fa1afde7a421)
+use pawn control rotation: 如果不勾，按WASD，镜头也会旋转
+![Uploading image.png…]()
+
