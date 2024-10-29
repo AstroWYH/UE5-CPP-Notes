@@ -6,7 +6,7 @@
 
 ![image](https://github.com/user-attachments/assets/ca8784a3-6af7-4b63-8bb8-cdded31c7cbb)
 
-弹簧臂的控制
+弹簧臂的控制，第三人称不要勾选inherit yaw，否则镜头跟随旋转
 use pawn control rotation: 如果不勾，按WASD，镜头也会旋转
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/dba0ebb9-b7cc-4dcc-82e2-0f90714c16d6)
 
