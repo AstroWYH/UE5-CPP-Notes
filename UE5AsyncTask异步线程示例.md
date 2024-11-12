@@ -1,18 +1,18 @@
 ```cpp
 void UXXSubsystem::Func(const ProObj& ProtocolObject)
 {
-  // bFlag会在主线程其他地方置true，可能比Func早，可能更晚
-  // bFlag需要是std::atomic<bool>
+        // bFlag会在主线程其他地方置true，可能比Func早，可能更晚
+        // bFlag需要是std::atomic<bool>
 	if (bFlag)
 	{
 		Process(ProtocolObject);
 		return;
 	}
 
-  // 如果bFlag还未置true，则开启异步线程等待
+        // 如果bFlag还未置true，则开启异步线程等待
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, ProtocolObject]()
 		{
-      // 设置超时，避免一直等待
+                        // 设置超时，避免一直等待
 			const float TimeoutSeconds = 30.0f;
 			const double StartTime = FPlatformTime::Seconds();
 			while (!bFlag)
@@ -25,7 +25,7 @@ void UXXSubsystem::Func(const ProObj& ProtocolObject)
 
 				FPlatformProcess::Sleep(0.1f);
 			}
-      // 最后回到主线程，处理业务逻辑，避免异步线程和主线程发生数据竞争
+                        // 最后回到主线程，处理业务逻辑，避免异步线程和主线程发生数据竞争
 			AsyncTask(ENamedThreads::GameThread, [this, ProtocolObject]()
 				{
 					Process(ProtocolObject);
