@@ -1,9 +1,9 @@
 （攻击者）B_AI_Controller_LyraShooter的行为树BT_Lyra_Shooter_Bot，在发现Target后，执行了BTS_Shoot_C
-（攻击者）BTService "BTS_Shoot_C"执行了SendGameplayEventToActor(Actor=攻击者，{TagName="InputTag.Weapon.Fire" })
+（攻击者）BTService "BTS_Shoot_C"执行了SendGameplayEventToActor(Actor=攻击者，{TagName="InputTag.Weapon.Fire" })，其内执行AbilitySystemComponent->HandleGameplayEvent(EventTag, &Payload);，启用GA
 （攻击者）C++的ULyraGameplayAbility_RangedWeapon被激活，执行蓝图K2_ActivateAbility逻辑
 （攻击者）GA_Weapon_Fire蓝图，被执行了ActivateAbility激活，执行StartRangedWeaponTargeting，然后定时器播Fire蒙太奇，然后EndAbility
 （攻击者）GA_武器（GA_Weapon_Fire_Rifle_Auto_C的父类GA_Weapon_Fire）在蓝图调用StartRangedWeaponTargeting，调入C++ULyraGameplayAbility_RangedWeapon父类
 （攻击者）C++中ULyraGameplayAbility_RangedWeapon射线检测敌人，然后调GA_武器蓝图的OnRangedWeaponTargetDataReady
 （攻击者）ULyraGameplayAbility_RangedWeapon的蓝图子类的蓝图武器GA(GA_auto rifle)，调用ApplyGameplayEffectToTarget进行对HitTarget的打击，（同时会传递GE "GE_Damage_RifleAuto_C"}）
-（受击者）ULyraHealthSet（AS）会执行PostGameplayEffectExecute
+（受击者）ULyraHealthSet（AS）会执行PostGameplayEffectExecute，如果没血，后续执行Death相关逻辑
 （受击者）然后播到lyrahealthcomponent里，通过asc执行HandleGameplayEvent，然后会调到ULyraGameplayAbility_Death::ActivateAbility，然后会执行死亡相关的逻辑
