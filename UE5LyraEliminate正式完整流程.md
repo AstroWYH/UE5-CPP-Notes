@@ -32,4 +32,4 @@
 
 
 
-在4个player及相关组件都创建好后，会开始执行游戏GamePhase有3个阶段：phase warmup、phase playing、phase post
+在4个player及相关组件都创建好后，会开始执行游戏GamePhase有3个阶段：phase warmup、phase playing、phase post，这是3个GA
