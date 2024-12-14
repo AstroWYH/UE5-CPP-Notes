@@ -1,0 +1,30 @@
+
+[GamePlayFramework]
+ALyraCharacter AModularCharacter
+ULyraHeroComponent UPawnComponent
+ULyraPawnExtensionComponent UPawnComponent
+
+[GAS]
+ULyraAbilitySystemComponent
+ULyraGameplayAbility
+FLyraGameplayEffectContext
+LyraGameplayTags
+ULyraAttributeSet
+
+[GameState]
+ULyraFrontendStateComponent UGameStateComponent
+ULyraBotCreationComponent
+ULyraGamePhaseAbility
+ULyraGamePhaseSubsystem
+
+[GameFeature]
+UGameFeatureAction_AddWidgets UGameFeatureAction
+UGameFeatureAction_AddComponents
+
+[DataAsset]
+ULyraExperienceDefinition UPrimaryDataAsset
+ULyraAbilitySet UPrimaryDataAsset
+
+[CommonUI]
+UCommonActivatableWidgetStack
+UCommonActivatableWidget
