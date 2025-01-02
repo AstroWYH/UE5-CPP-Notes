@@ -1,0 +1,13 @@
+![image-20241213174509410](Images/UE5LyraGAS伤害免疫GE/image-20241213174509410.png)
+
+![image-20241213174147855](Images/UE5LyraGAS伤害免疫GE/image-20241213174147855.png)
+
+![image-20241213174155395](Images/UE5LyraGAS伤害免疫GE/image-20241213174155395.png)
+
+![image-20241213174403494](Images/UE5LyraGAS伤害免疫GE/image-20241213174403494.png)
+
+![image-20241213174425561](Images/UE5LyraGAS伤害免疫GE/image-20241213174425561.png)
+
+![image-20241213174545222](Images/UE5LyraGAS伤害免疫GE/image-20241213174545222.png)
+
+GE主要配合GameplayTag产生作用，当判断Target是否有这个被GE施加的Tag后，可以执行具体的逻辑
