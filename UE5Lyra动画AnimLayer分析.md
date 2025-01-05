@@ -1,5 +1,6 @@
-lyra动画蓝图的基础放在了ABP_Mannequin_Base，然后里面写好了一些基本的逻辑，然后根据不同的逻辑，分了很多不同的layer函数，这些layer的input/output接口，定义在了ALI_ItemAnimLayers里面，然后具体的实现是在ABP_ItemAnimLayersBase里面，然后ABP_ItemAnimLayersBase会定义很多的动画序列，但不会去填充他们，它会有几个子类，比如手枪、步枪，这些子类会提供这些动画序列
-你的观察非常准确！Lyra 示例项目中的动画系统设计确实采用了这种分层和模块化的架构。以下是对这种设计模式的详细解释：
+lyra动画蓝图的基础放在了ABP_Mannequin_Base，然后里面写好了一些基本的逻辑，然后根据不同的逻辑，分了很多不同的layer函数，这些layer的input/output接口，定义在了ALI_ItemAnimLayers里面，然后具体的实现是在ABP_ItemAnimLayersBase里面，然后ABP_ItemAnimLayersBase会定义很多的动画序列，但不会去填充他们，它会有几个子类，比如手枪、步枪，这些子类会提供这些动画序列。
+
+Lyra 示例项目中的动画系统设计确实采用了这种分层和模块化的架构。以下是对这种设计模式的详细解释：
 
 1. 核心架构
 1.1 ABP_Mannequin_Base
