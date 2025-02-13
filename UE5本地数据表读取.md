@@ -1,6 +1,6 @@
 ## UMixDataSubsystem
 
-```
+```cpp
 UCLASS()
 class MYGAME_API UMixDataSubsystem : public UGameInstanceSubsystem
 {
@@ -30,7 +30,7 @@ public:
 
 ## FMixItemData
 
-```
+```cpp
 USTRUCT(BlueprintType)
 struct FMixItemData : public FTableRowBase
 {
