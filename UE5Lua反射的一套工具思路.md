@@ -1,4 +1,25 @@
+### 关键点
+
+### 1. SpawnActor 操作
+
+在 Lua 中调用 `SpawnActor` 函数时，实际上是在 Lua 代码里发起请求。当 Lua 调用这个函数时，会触发对应的 C++ 函数 `EveLuaManager::LuaSpawnActor`。在这个 C++ 函数中，利用 UE 的 API 在 UE 环境里生成一个 `Actor` 实例。然后，将这个 `Actor` 实例的指针通过 `lua_pushlightuserdata` 压入 Lua 栈，从而把这个 `Actor` 实例传递给 Lua 环境。这样，Lua 代码就可以持有这个 `Actor` 实例的引用，并对其进行后续操作。
+
+### 2. 调用函数操作
+
+当在 Lua 中调用 `CallMemberFunction` 时，C++ 函数 `EveLuaManager::LuaCallMemberFunction` 会被执行。该函数首先从 Lua 栈中获取 `Actor` 实例指针和要调用的函数名，接着利用 UE 的反射机制，通过 `UClass::FindFunctionByName` 查找对应的 `UFunction`。然后，将 Lua 栈上的参数提取出来，填充到为函数调用分配的参数内存中。最后，调用 `Actor->ProcessEvent` 执行函数。如果函数有返回值，会将返回值压入 Lua 栈，以便 Lua 代码获取。
+
+### 3. 修改属性操作
+
+在 Lua 中调用 `SetObjectProperty` 时，对应的 C++ 函数 `EveLuaManager::LuaSetObjectProperty` 会被触发。这个函数从 Lua 栈中获取 `Actor` 实例指针、属性名和要设置的值。然后，使用 UE 的反射机制，通过 `UClass::FindPropertyByName` 查找对应的 `UProperty`。根据属性的类型，将 Lua 栈上的值赋给 `Actor` 实例的对应属性。最后，将操作结果（成功或失败）压入 Lua 栈返回给 Lua 代码。
+
+### 总结
+
+整个反射过程的核心就是在 Lua 和 UE 之间建立桥梁，通过 Lua 栈传递数据和请求。在 C++ 侧利用 UE 的反射机制来查找和操作 `Actor` 的函数和属性。函数调用的返回值和操作结果也通过 Lua 栈返回给 Lua 代码，从而实现了 Lua 对 UE 功能的调用和控制。这种方式使得 Lua 脚本可以方便地与 UE 引擎进行交互，实现动态脚本化的游戏逻辑。
+
+
+
 ### 整体思路
+
 要实现让 Lua 能够调用 UE5 的功能，核心在于搭建一个桥梁，使得 Lua 环境和 UE5 环境能够相互通信。这需要完成几个关键任务：首先要初始化 Lua 环境，为后续的交互做好准备；接着要将 UE5 中的类、函数等信息进行记录，也就是实现反射机制，让程序能够在运行时知晓这些信息；然后把这些信息暴露给 Lua 环境，使 Lua 脚本可以识别和调用；最后处理好 Lua 和 UE5 之间的数据传递和函数调用逻辑。
 
 ### 具体步骤及原因
