@@ -95,7 +95,7 @@ mysql> select * from app01_department;
 3 rows in set (0.00 sec)
 
 ------------------- clear -------------------
-# 往表里插入2条数据
+# 往表里插入2条数据(但如果没记错，这操作可以在django里做，只有建表不能在django做)
 mysql> insert into app01_department(title) values("ITDepart"),("Marketing");
 Query OK, 2 rows affected (0.06 sec)
 Records: 2  Duplicates: 0  Warnings: 0
