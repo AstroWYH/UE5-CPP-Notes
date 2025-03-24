@@ -102,3 +102,10 @@
 3. 生成 Clang 编译数据库。
 
 如果需要在 Linux 或 WSL 环境下运行，建议将路径转换为 Linux 风格，并确保相关依赖已正确配置。
+
+## 使用ctags生成tags文件
+
+```
+/e/ctags/ctags58/ctags58/ctags.exe --tag-relative --extra=f -R --languages=c++ --exclude=*.gen.cpp --exclude=*.generated.h --exclude=*/Intermediate/* --exclude=*/Binaries/* --exclude=*/DerivedDataCache/* --exclude=*/.git/* --exclude=*/.svn/* --exclude=*/Saved/* --exclude=*/Build/* --exclude=*/ThirdParty/* --exclude=*/Plugins/*/Intermediate/* --exclude=*/Plugins/*/Binaries/* --exclude=*/*.log --exclude=*/*.pdb --exclude=*/*.obj --exclude=*/*.lib --exclude=*/*.exp .
+```
+
