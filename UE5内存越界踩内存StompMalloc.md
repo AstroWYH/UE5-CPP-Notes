@@ -2,13 +2,13 @@ bStompMalloc是Unreal Engine提供的一个强大的内存调试工具，可以�
 
 #### 基本概念
 
-1. **Overrun(上溢出)**: 读写分配内存块后面的区域
-2. **Underrun(下溢出)**: 读写分配内存块前面的区域
-3. **Use-after-free(释放后使用)**: 在内存释放后继续访问它
+1. **Overrun(上溢出)**: 读写分配内存块后面的区域。
+2. **Underrun(下溢出)**: 读写分配内存块前面的区域。
+3. **Use-after-free(释放后使用)**: 在内存释放后继续访问它。
 
 #### 开启选项
 
-在命令行参数上，补充-stompmalloc即可开启
+在命令行参数上，补充-stompmalloc即可开启。
 
 ![image-20250331154714662](Images/UE5内存越界踩内存StompMalloc/image-20250331154714662.png)
 
@@ -89,7 +89,9 @@ void AEveLuaActor::TestUseAfterFree()
 }
 ```
 
-待测试验证......
+1）如果不开启-stompmalloc，启动游戏，当执行到`TestBytes[0] = 1;`时，不会有反应，但F5继续执行，后续会一定断在alloc.c的代码里，但调用栈无法发现错误位置（即释放后使用的位置）。
+
+2）如果开启-stompmalloc，则会立即断在`TestBytes[0] = 1;`的位置。
 
 
 
