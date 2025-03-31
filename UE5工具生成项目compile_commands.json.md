@@ -2,6 +2,10 @@
 /mnt/e/zx/Engine/Binaries/DotNET/UnrealBuildTool.Tests/net6.0/UnrealBuildTool.exe ZhuxianClient Win64 DebugGame "E:\zx\ZhuxianClient\ZhuxianClient.uproject" -BaseFromWorkingDir -separatefile=1 -WINDOWED -lua="E:\zx\ZhuxianClient\Tools\Lua\5.4\DLL" -ResX=1280 -ResY=720 -defaultmap=/game/maps/fastcreate -mode=GenerateClangDatabase
 ```
 
+```
+/e/zx/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe  ZhuxianClient Win64 DebugGame "E:\zx\ZhuxianClient\ZhuxianClient.uproject" -BaseFromWorkingDir -separatefile=1 -WINDOWED -lua="E:\zx\ZhuxianClient\Tools\Lua\5.4\DLL" -ResX=1280 -ResY=720 -defaultmap=/game/maps/fastcreate -mode=GenerateClangDatabase
+```
+
 以下是用户提供的命令行参数的详细分析：
 
 ---
@@ -107,5 +111,9 @@
 
 ```
 /e/ctags/ctags58/ctags58/ctags.exe --tag-relative --extra=f -R --languages=c++ --exclude=*.gen.cpp --exclude=*.generated.h --exclude=*/Intermediate/* --exclude=*/Binaries/* --exclude=*/DerivedDataCache/* --exclude=*/.git/* --exclude=*/.svn/* --exclude=*/Saved/* --exclude=*/Build/* --exclude=*/ThirdParty/* --exclude=*/Plugins/*/Intermediate/* --exclude=*/Plugins/*/Binaries/* --exclude=*/*.log --exclude=*/*.pdb --exclude=*/*.obj --exclude=*/*.lib --exclude=*/*.exp .
+```
+
+```
+
 ```
 
