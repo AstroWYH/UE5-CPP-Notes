@@ -62,7 +62,7 @@ void AEveLuaActor::TestMemoryUnderrun()
 
 相比起上越界，下越界的概率较小，但也可能更致命。对于下越界问题，stompmalloc只会在分配内存前段保留一个哨兵值，因此无法立刻发现异常。如果在内存释放的时候，发现该哨兵值被修改，则能发现下越界问题，但如果恰好未被修改，则也无法发现。
 
-经过测试，开启或不开启-stompmalloc，都可能甚至在程序结束时，也无法发现此处下越界的异常。
+经过测试，开启或不开启-stompmalloc，都很可能甚至在程序结束时，也无法发现此处下越界的异常。符合预期。
 
 ![image-20250331160100687](Images/UE5内存越界踩内存StompMalloc/image-20250331160100687.png)
 
@@ -72,7 +72,11 @@ void AEveLuaActor::TestMemoryUnderrun()
 
 （此图引用知乎）
 
-开启InUseUnderrunMode：待测试验证......
+开启InUseUnderrunMode：
+
+只需要编译MallocStomp.cpp相关的目标单元，速度很快。可以发现，下越界的问题，也可以立即报告异常了。
+
+![image-20250331172953994](Images/UE5内存越界踩内存StompMalloc/image-20250331172953994.png)
 
 #### 示例3：释放后使用
 
