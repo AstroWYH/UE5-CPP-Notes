@@ -6,6 +6,13 @@
 /e/zx/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe  ZhuxianClient Win64 DebugGame "E:\zx\ZhuxianClient\ZhuxianClient.uproject" -BaseFromWorkingDir -separatefile=1 -WINDOWED -lua="E:\zx\ZhuxianClient\Tools\Lua\5.4\DLL" -ResX=1280 -ResY=720 -defaultmap=/game/maps/fastcreate -mode=GenerateClangDatabase
 ```
 
+```
+E:\uesrc\UnrealEngine\Samples\Lua-C-Notes>E:\uesrc\UnrealEngine\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe EveLua Win64 Debug E:\uesrc\UnrealEngine\Samples\Lua-C-Notes\EveLua.uproject -mode=GenerateClangDatabase
+[Eve-Log] Lua Include Path: E:\uesrc\UnrealEngine\Samples\Lua-C-Notes\Source\EveLua\Lua\Inc\src
+[Eve-Log] Lua Library Path: E:\uesrc\UnrealEngine\Samples\Lua-C-Notes\Source\EveLua\Lua\Lib\Lua.lib
+Total execution time: 6.62 seconds
+```
+
 以下是用户提供的命令行参数的详细分析：
 
 ---
@@ -111,9 +118,5 @@
 
 ```
 /e/ctags/ctags58/ctags58/ctags.exe --tag-relative --extra=f -R --languages=c++ --exclude=*.gen.cpp --exclude=*.generated.h --exclude=*/Intermediate/* --exclude=*/Binaries/* --exclude=*/DerivedDataCache/* --exclude=*/.git/* --exclude=*/.svn/* --exclude=*/Saved/* --exclude=*/Build/* --exclude=*/ThirdParty/* --exclude=*/Plugins/*/Intermediate/* --exclude=*/Plugins/*/Binaries/* --exclude=*/*.log --exclude=*/*.pdb --exclude=*/*.obj --exclude=*/*.lib --exclude=*/*.exp .
-```
-
-```
-
 ```
 
