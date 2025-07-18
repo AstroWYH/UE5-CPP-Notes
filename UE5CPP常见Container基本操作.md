@@ -1,5 +1,5 @@
 ```cpp
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Night Gamer, Inc. All Rights Reserved.
 
 #include "BlankProgram.h"
 
