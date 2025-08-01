@@ -6,8 +6,6 @@ start "" "%~dp0\Engine\Binaries\Win64\UnrealEditor" "%~dp0\xxx\xxx.uproject" -WI
 
 ![img](Images/UE5性能分析Editor启动profiling/image2025-7-28_15-0-48.png)
 
-**trace文件（可下载）：![img](Images/UE5性能分析Editor启动profiling/placeholdertype=unknown&name=20250728_145658.rar&attachmentId=53381952&version=1&mimeType=application%2Foctet-stream&height=150)**
-
 **开启trace**
 
 [2025.07.28-06.57.43:561][  0]LogUnrealEdMisc: Loading editor; pre map load, took 45.633
@@ -54,6 +52,12 @@ start "" "%~dp0\Engine\Binaries\Win64\UnrealEditor" "%~dp0\xxx\xxx.uproject" -WI
 
 ## 问题1：这15s在干什么？
 
+提示为LoadMap，以及调用栈为LoadPackageInternal函数，可见在加载StartUp默认地图，和相关的Package。地图本身引用很多资源（蓝图、材质、关卡流、Actor Class），那么就会触发 LoadPackageInternal。
+
+但这15s完全没体现在trace上，可能是因为资源量巨大导致IO瓶颈，因为这可能涉及实打实的大量默认地图的资源加载或解析。
+
+也可能是某个加载相关的子线程完全占用了。
+
 ![新诛仙项目 > Editor启动profiling > image2025-7-28_15-19-41.png](Images/UE5性能分析Editor启动profiling/image2025-7-28_15-19-41.png)
 
 ## 问题2：这35s是重点。
@@ -67,3 +71,42 @@ FPackageName::DoesPackageExistEx (42.7 µs)
 FPackageName::SearchForPackageOnDisk (27 µs)
 
 放大后，全是密密麻麻的资源查找、检查确认相关的操作。
+
+FPackageName::DoesPackageExistEx (42.7 µs)
+
+FPackageName::SearchForPackageOnDisk (27 µs)
+
+放大后，全是密密麻麻的资源查找、检查确认相关的操作。
+
+
+
+这部分并非加载资源，而是为了分析蓝图引用是否存在、构建索引等，触发了大量验证路径存在性。
+
+有很多蓝图之间存在：
+
+软引用（例如：变量类型是另一个蓝图类）
+
+自定义宏 / 函数库 / Interface 等交叉依赖
+
+蓝图中出现了字符串路径引用（哪怕没加载）
+
+每当蓝图加载到内存或预处理其 metadata 时，UE 会做如下事：
+
+尝试“找出引用资源是否存在”：
+
+比如 BP_A 里有：
+
+TSubclassOf<ABP_B> BP_BClass;
+
+Editor 启动时可能会：
+
+FPackageName::DoesPackageExistEx(TEXT("/Game/BP/BP_B"))
+
+再确认路径是否真的存在，以构建蓝图引用树。
+
+
+
+15s优化空间：更换默认地图，减少不必要资源，禁用非必要插件
+
+35s优化空间：资源量庞大无法避免，精简无用蓝图，拆分某些非必要蓝图到插件，避免上来加载，避免循环依赖。
+
